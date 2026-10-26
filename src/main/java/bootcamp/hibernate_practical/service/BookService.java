@@ -5,6 +5,7 @@ import bootcamp.hibernate_practical.dto.CreateBookRequest;
 import bootcamp.hibernate_practical.dto.UpdateBookRequest;
 import bootcamp.hibernate_practical.entity.Book;
 import bootcamp.hibernate_practical.repository.BookRepository;
+import bootcamp.hibernate_practical.exception.BookNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -36,14 +37,14 @@ public class BookService {
 
     public BookResponse getBookById(Long id) {
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
+                .orElseThrow(() -> new BookNotFoundException(id));
         return mapToResponse(book);
     }
 
     @Transactional
     public BookResponse updateBook(Long id, UpdateBookRequest request) {
         Book book = bookRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Book not found with id: " + id));
+                .orElseThrow(() -> new BookNotFoundException(id));
 
         book.setTitle(request.getTitle());
         book.setAuthor(request.getAuthor());
@@ -58,7 +59,7 @@ public class BookService {
     @Transactional
     public void deleteBook(Long id) {
         if (!bookRepository.existsById(id)) {
-            throw new RuntimeException("Book not found with id: " + id);
+            throw new BookNotFoundException(id);
         }
         bookRepository.deleteById(id);
     }
@@ -78,6 +79,11 @@ public class BookService {
 
     public long countBooks() {
         return bookRepository.count();
+    }
+
+    public List<BookResponse> findByTitleContainingIgnoreCase(String title){
+        return bookRepository.findByTitleContainingIgnoreCase(title)
+                .stream().map(this::mapToResponse).toList();
     }
 
     private BookResponse mapToResponse(Book book) {

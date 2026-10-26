@@ -62,4 +62,9 @@ public class BookController {
     public long countBooks() {
         return bookService.countBooks();
     }
+
+    @GetMapping("/title/{title}")
+    public List<BookResponse> getBooksByTitle(@PathVariable String title) {
+        return bookService.findByTitleContainingIgnoreCase(title);
+    }
 }
