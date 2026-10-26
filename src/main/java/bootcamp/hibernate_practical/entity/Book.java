@@ -22,6 +22,7 @@ public class Book {
     private String genre;
     private int publicationYear;
     private boolean available;
+    private boolean borrowedStatus;
 
     public Book(String title, String author, String genre, int publicationYear, boolean available) {
         this.title = title;

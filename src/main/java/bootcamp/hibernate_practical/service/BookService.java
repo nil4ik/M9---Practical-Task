@@ -4,6 +4,7 @@ import bootcamp.hibernate_practical.dto.BookResponse;
 import bootcamp.hibernate_practical.dto.CreateBookRequest;
 import bootcamp.hibernate_practical.dto.UpdateBookRequest;
 import bootcamp.hibernate_practical.entity.Book;
+import bootcamp.hibernate_practical.exception.BookStateException;
 import bootcamp.hibernate_practical.repository.BookRepository;
 import bootcamp.hibernate_practical.exception.BookNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,6 +87,38 @@ public class BookService {
                 .stream().map(this::mapToResponse).toList();
     }
 
+    @Transactional
+    public BookResponse borrowBook(Long id) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException(id));
+
+        if (book.isBorrowedStatus()) {
+            throw new BookStateException("Book with id " + id + " is already borrowed");
+        }
+
+        book.setBorrowedStatus(true);
+        book.setAvailable(false);
+
+        Book savedBook = bookRepository.save(book);
+        return mapToResponse(savedBook);
+    }
+
+    @Transactional
+    public BookResponse returnBook(Long id) {
+        Book book = bookRepository.findById(id)
+                .orElseThrow(() -> new BookNotFoundException(id));
+
+        if (!book.isBorrowedStatus()) {
+            throw new BookStateException("Book with id " + id + " is not borrowed");
+        }
+
+        book.setBorrowedStatus(false);
+        book.setAvailable(true);
+
+        Book savedBook = bookRepository.save(book);
+        return mapToResponse(savedBook);
+    }
+
     private BookResponse mapToResponse(Book book) {
         return new BookResponse(
                 book.getId(),
@@ -93,7 +126,8 @@ public class BookService {
                 book.getAuthor(),
                 book.getGenre(),
                 book.getPublicationYear(),
-                book.isAvailable()
+                book.isAvailable(),
+                book.isBorrowedStatus()
         );
     }
 }

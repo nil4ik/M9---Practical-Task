@@ -67,4 +67,14 @@ public class BookController {
     public List<BookResponse> getBooksByTitle(@PathVariable String title) {
         return bookService.findByTitleContainingIgnoreCase(title);
     }
+
+    @PostMapping("/{id}/borrow")
+    public BookResponse borrowBook(@PathVariable Long id) {
+        return bookService.borrowBook(id);
+    }
+
+    @PostMapping("/{id}/return")
+    public BookResponse returnBook(@PathVariable Long id) {
+        return bookService.returnBook(id);
+    }
 }
